@@ -61,23 +61,52 @@ public class GridPanel : MaskableGraphic
         vertexHelper.AddUIVertexQuad(verts);
     }
 
-    public Vector2 SnapToGrid(Vector2 anchoredPosition)
+    public void SnapToGrid(WindowComponent windowComponent)
     {
-        Vector2 snappedAnchoredPosition = anchoredPosition;
+        Vector2 snappedAnchoredPosition = windowComponent.RectTransform.anchoredPosition;
         for (int i = 0; i < 2; i++)
         {
             if (GridSize[i] <= 0.0f)
                 continue;
 
-            int multiple = Mathf.RoundToInt(anchoredPosition[i] / GridSize[i]);
+            int multiple = Mathf.RoundToInt(snappedAnchoredPosition[i] / GridSize[i]);
             snappedAnchoredPosition[i] = GridSize[i] * multiple;
         }
-        return snappedAnchoredPosition;
+        windowComponent.RectTransform.anchoredPosition = snappedAnchoredPosition;
+    }
+
+    public void ClampInsideGridPanel(WindowComponent windowComponent)
+    {
+        Vector2 gridMin = new Vector2(0.0f, -_rectTransform.rect.height);
+        Vector2 gridMax = new Vector2(_rectTransform.rect.width, 0.0f);
+        Bounds windowComponentBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(_rectTransform, windowComponent.ExpandedRectTransform);
+
+        Vector2 fixedAnchoredPosition = windowComponent.RectTransform.anchoredPosition;
+        for (int i=0; i < 2; i++)
+        {
+            
+            float minDifference = gridMin[i] - windowComponentBounds.min[i];
+            if (minDifference > 0.0f)
+            {
+                fixedAnchoredPosition[i] += minDifference;
+            }
+
+            float maxDifference = gridMax[i] - windowComponentBounds.max[i];
+            if (maxDifference < 0.0f)
+            {
+                fixedAnchoredPosition[i] += maxDifference;
+            }
+        }
+
+        windowComponent.RectTransform.anchoredPosition = fixedAnchoredPosition;
     }
 
     public bool CanWindowBePlaced(WindowComponent windowComponent)
     {
+
         Bounds windowComponentBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(_rectTransform, windowComponent.ExpandedRectTransform);
+        Debug.Log(windowComponentBounds);
+
         int numberOfChildren = _rectTransform.childCount;
         for (int i=0; i < numberOfChildren; i++)
         {
@@ -93,5 +122,6 @@ public class GridPanel : MaskableGraphic
         }
         return true;
     }
+    
 
 }

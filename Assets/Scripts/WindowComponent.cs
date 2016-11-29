@@ -50,7 +50,7 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        
+        _rectTransform.SetAsLastSibling();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -72,9 +72,12 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         Vector2 localAnchoredPosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(GridPanel.RectTransform, eventData.position, Camera.main, out localAnchoredPosition);
-        localAnchoredPosition = GridPanel.SnapToGrid(localAnchoredPosition);
         _rectTransform.anchoredPosition = localAnchoredPosition;
-        Debug.Log(GridPanel.CanWindowBePlaced(this));
+
+        GridPanel.SnapToGrid(this);
+        GridPanel.ClampInsideGridPanel(this);
+
+        //Debug.Log(GridPanel.CanWindowBePlaced(this));
     }
 
     private void OnDragInComponentPanel(PointerEventData eventData)
