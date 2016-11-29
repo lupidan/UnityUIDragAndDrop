@@ -17,13 +17,18 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         set
         {
             _expanded = value;
-            CompactWindow.gameObject.SetActive(!_expanded);
-            ExpandedWindow.gameObject.SetActive(_expanded);
+            UpdateActiveObjects();
         }
     }
 
     private RectTransform _rectTransform;
-    private DragAndDropMenuController _controller;
+    public RectTransform RectTransform { get { return _rectTransform; } }
+
+    private RectTransform _compactRectTransform;
+    public RectTransform CompactRectTransform { get { return _compactRectTransform; } }
+
+    private RectTransform _expandedRectTransform;
+    public RectTransform ExpandedRectTransform { get { return _expandedRectTransform; } }
 
     void Awake()
     {
@@ -32,23 +37,24 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     void Start()
     {
-        _controller = FindObjectOfType<DragAndDropMenuController>();
+        _compactRectTransform = CompactWindow.GetComponent<RectTransform>();
+        _expandedRectTransform = ExpandedWindow.GetComponent<RectTransform>();
+        UpdateActiveObjects();
     }
 
+    private void UpdateActiveObjects()
+    {
+        CompactWindow.gameObject.SetActive(!_expanded);
+        ExpandedWindow.gameObject.SetActive(_expanded);
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (_controller.DraggedWindowComponent != null)
-            return;
-
-        _controller.DraggedWindowComponent = this;
+        
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (_controller.DraggedWindowComponent != this)
-            return;
-
         bool isOnComponentPanel = RectTransformUtility.RectangleContainsScreenPoint(ComponentPanel.RectTransform, eventData.position, Camera.main);
         if (isOnComponentPanel)
             OnDragInComponentPanel(eventData);
@@ -68,6 +74,7 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         RectTransformUtility.ScreenPointToLocalPointInRectangle(GridPanel.RectTransform, eventData.position, Camera.main, out localAnchoredPosition);
         localAnchoredPosition = GridPanel.SnapToGrid(localAnchoredPosition);
         _rectTransform.anchoredPosition = localAnchoredPosition;
+        Debug.Log(GridPanel.CanWindowBePlaced(this));
     }
 
     private void OnDragInComponentPanel(PointerEventData eventData)
@@ -85,10 +92,7 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (_controller.DraggedWindowComponent != this)
-            return;
-
-        _controller.DraggedWindowComponent = null;
+        
     }
 
 }
