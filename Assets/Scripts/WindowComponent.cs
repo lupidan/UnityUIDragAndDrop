@@ -73,43 +73,31 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void OnDrag(PointerEventData eventData)
     {
         bool isOnComponentPanel = RectTransformUtility.RectangleContainsScreenPoint(ComponentPanel.RectTransform, eventData.position, eventData.pressEventCamera);
+        
+        bool shouldBeExpanded = !isOnComponentPanel;
+        if (Expanded != shouldBeExpanded)
+            Expanded = shouldBeExpanded;
+        
+        RectTransform windowParent = isOnComponentPanel ? ComponentPanel.RectTransform : GridPanel.RectTransform;
+        if (_rectTransform.parent != windowParent)
+            _rectTransform.SetParent(windowParent);
+
+        Vector2 localAnchoredPosition;
+        Vector2 dragOffset = isOnComponentPanel ? _compactDragOffset : _expandedDragOffset;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(windowParent, eventData.position, eventData.pressEventCamera, out localAnchoredPosition);
+        _rectTransform.anchoredPosition = localAnchoredPosition - dragOffset;
+
         if (isOnComponentPanel)
-            OnDragInComponentPanel(eventData);
+        {
+            ComponentPanel.ClampInsideGridPanel(this);
+        }
         else
-            OnDragInGridPanel(eventData);
-    }
-
-    private void OnDragInGridPanel(PointerEventData eventData)
-    {
-        if (!Expanded)
-            Expanded = true;
-
-        if (_rectTransform.parent != GridPanel.RectTransform)
-            _rectTransform.SetParent(GridPanel.RectTransform);
-
-        Vector2 localAnchoredPosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(GridPanel.RectTransform, eventData.position, eventData.pressEventCamera, out localAnchoredPosition);
-        _rectTransform.anchoredPosition = localAnchoredPosition - _expandedDragOffset;
-
-        GridPanel.SnapToGrid(this);
-        GridPanel.ClampInsideGridPanel(this);
-        bool windowCanBePlaced = GridPanel.CanWindowBePlaced(this);
-        _canvasGroup.alpha = windowCanBePlaced ? 1.0f : 0.5f;
-
-    }
-
-    private void OnDragInComponentPanel(PointerEventData eventData)
-    {
-        if (Expanded)
-            Expanded = false;
-
-        if (_rectTransform.parent != ComponentPanel.RectTransform)
-            _rectTransform.SetParent(ComponentPanel.RectTransform);
-
-        Vector2 localAnchoredPosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(ComponentPanel.RectTransform, eventData.position, eventData.pressEventCamera, out localAnchoredPosition);
-        _rectTransform.anchoredPosition = localAnchoredPosition - _compactDragOffset;
-        ComponentPanel.ClampInsideGridPanel(this);
+        {
+            GridPanel.SnapToGrid(this);
+            GridPanel.ClampInsideGridPanel(this);
+            bool windowCanBePlaced = GridPanel.CanWindowBePlaced(this);
+            _canvasGroup.alpha = windowCanBePlaced ? 1.0f : 0.5f;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
