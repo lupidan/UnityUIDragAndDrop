@@ -30,6 +30,9 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     private RectTransform _expandedRectTransform;
     public RectTransform ExpandedRectTransform { get { return _expandedRectTransform; } }
 
+    private Vector2 _compactDragOffset;
+    private Vector2 _expandedDragOffset;
+
     void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
@@ -51,6 +54,14 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void OnBeginDrag(PointerEventData eventData)
     {
         _rectTransform.SetAsLastSibling();
+        if (Expanded)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _expandedDragOffset);
+        }
+        else
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _compactDragOffset);
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -72,12 +83,10 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         Vector2 localAnchoredPosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(GridPanel.RectTransform, eventData.position, Camera.main, out localAnchoredPosition);
-        _rectTransform.anchoredPosition = localAnchoredPosition;
+        _rectTransform.anchoredPosition = localAnchoredPosition - _expandedDragOffset;
 
         GridPanel.SnapToGrid(this);
         GridPanel.ClampInsideGridPanel(this);
-
-        //Debug.Log(GridPanel.CanWindowBePlaced(this));
     }
 
     private void OnDragInComponentPanel(PointerEventData eventData)
@@ -90,12 +99,13 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         Vector2 localAnchoredPosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(ComponentPanel.RectTransform, eventData.position, Camera.main, out localAnchoredPosition);
-        _rectTransform.anchoredPosition = localAnchoredPosition;
+        _rectTransform.anchoredPosition = localAnchoredPosition - _compactDragOffset;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        
-    }
+       _compactDragOffset = Vector2.zero;
+       _expandedDragOffset = Vector2.zero;
+}
 
 }

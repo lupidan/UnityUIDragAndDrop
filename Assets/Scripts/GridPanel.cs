@@ -103,7 +103,6 @@ public class GridPanel : MaskableGraphic
 
     public bool CanWindowBePlaced(WindowComponent windowComponent)
     {
-
         Bounds windowComponentBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(_rectTransform, windowComponent.ExpandedRectTransform);
         Debug.Log(windowComponentBounds);
 
