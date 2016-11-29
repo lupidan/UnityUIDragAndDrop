@@ -22,6 +22,8 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     }
 
     private CanvasGroup _canvasGroup;
+    private Canvas _parentCanvas;
+    private RectTransform _parentCanvasRectTransform;
 
     private RectTransform _rectTransform;
     public RectTransform RectTransform { get { return _rectTransform; } }
@@ -48,6 +50,8 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     {
         _compactRectTransform = CompactWindow.GetComponent<RectTransform>();
         _expandedRectTransform = ExpandedWindow.GetComponent<RectTransform>();
+        _parentCanvas = GetComponentInParent<Canvas>();
+        _parentCanvasRectTransform = _parentCanvas.transform as RectTransform;
         UpdateActiveObjects();
     }
 
@@ -72,7 +76,11 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnDrag(PointerEventData eventData)
     {
-        bool isOnComponentPanel = RectTransformUtility.RectangleContainsScreenPoint(ComponentPanel.RectTransform, eventData.position, eventData.pressEventCamera);
+        Vector2 clampedPosition = eventData.position;
+        clampedPosition.x = Mathf.Clamp(clampedPosition.x, 0.0f, _parentCanvasRectTransform.rect.width);
+        clampedPosition.y = Mathf.Clamp(clampedPosition.y, 0.0f, _parentCanvasRectTransform.rect.height);
+
+        bool isOnComponentPanel = RectTransformUtility.RectangleContainsScreenPoint(ComponentPanel.RectTransform, clampedPosition, eventData.pressEventCamera);
         
         bool shouldBeExpanded = !isOnComponentPanel;
         if (Expanded != shouldBeExpanded)
@@ -84,7 +92,7 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         Vector2 localAnchoredPosition;
         Vector2 dragOffset = isOnComponentPanel ? _compactDragOffset : _expandedDragOffset;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(windowParent, eventData.position, eventData.pressEventCamera, out localAnchoredPosition);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(windowParent, clampedPosition, eventData.pressEventCamera, out localAnchoredPosition);
         _rectTransform.anchoredPosition = localAnchoredPosition - dragOffset;
 
         if (isOnComponentPanel)
