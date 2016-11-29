@@ -36,7 +36,7 @@ public class GridPanel : MaskableGraphic
 
         for (int row = 0; row < numberOfRows; row++)
         {
-            for (int column = row % 2; column < numberOfColumns; column += 2)
+            for (int column = row % 2; column < numberOfColumns; column += 2) 
             {
                 Rect alternatingRect = new Rect(column * GridSize.x, row * GridSize.y, GridSize.x, GridSize.y);
                 DrawRectangle(alternatingRect, AlternateGridColor, vertexHelper);
