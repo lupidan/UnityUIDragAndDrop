@@ -64,16 +64,10 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         _beginDragParent = _rectTransform.parent as RectTransform;
         _beginDragAnchoredPosition = _rectTransform.anchoredPosition;
 
-        if (Expanded)
-        {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _expandedDragOffset);
-            _compactDragOffset = CompactRectTransform.rect.center;
-        }
-        else
-        {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _compactDragOffset);
-            _expandedDragOffset = ExpandedRectTransform.rect.center;
-        }
+        Vector2 dragOffset;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out dragOffset);
+        _compactDragOffset =  Expanded ? CompactRectTransform.rect.center : dragOffset;
+        _expandedDragOffset = Expanded ? dragOffset : ExpandedRectTransform.rect.center;
     }
 
     public void OnDrag(PointerEventData eventData)
