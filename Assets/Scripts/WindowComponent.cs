@@ -4,11 +4,11 @@ using UnityEngine.EventSystems;
 
 public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    public Vector2 CompactSize;
-    public Vector2 ExpandedSize;
+    public RectTransform CompactWindow;
+    public RectTransform ExpandedWindow;
     public GridPanel GridPanel;
     public ComponentPanel ComponentPanel;
-
+    
     public bool _expanded = false;
     public bool Expanded {
         get {
@@ -17,8 +17,8 @@ public class WindowComponent : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         set
         {
             _expanded = value;
-            _rectTransform.sizeDelta = _expanded ? ExpandedSize : CompactSize;
-            _rectTransform.pivot = _expanded ? new Vector2(0.0f, 1.0f) : new Vector2(0.5f, 0.5f);
+            CompactWindow.gameObject.SetActive(!_expanded);
+            ExpandedWindow.gameObject.SetActive(_expanded);
         }
     }
 
