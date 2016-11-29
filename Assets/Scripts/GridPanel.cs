@@ -104,18 +104,15 @@ public class GridPanel : MaskableGraphic
     public bool CanWindowBePlaced(WindowComponent windowComponent)
     {
         Bounds windowComponentBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(_rectTransform, windowComponent.ExpandedRectTransform);
-        Debug.Log(windowComponentBounds);
 
         int numberOfChildren = _rectTransform.childCount;
         for (int i=0; i < numberOfChildren; i++)
         {
             WindowComponent otherWindow = _rectTransform.GetChild(i).GetComponent<WindowComponent>();
-            if (otherWindow == null || otherWindow == windowComponent)
+            if (otherWindow == windowComponent || otherWindow == null)
                 continue;
 
             Bounds otherWindowBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(_rectTransform, otherWindow.ExpandedRectTransform);
-            otherWindowBounds.extents -= new Vector3(0.01f, 0.01f, 0.01f);
-            Debug.Log(windowComponentBounds + " VS " + otherWindowBounds);
             if (otherWindowBounds.Intersects(windowComponentBounds))
                 return false;
         }
